@@ -5,8 +5,12 @@
 package Interface;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.util.Random;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 /**
@@ -31,6 +35,7 @@ public final class Jogo extends javax.swing.JFrame {
     boolean [][] abertos = new boolean [10][10];
     
     int quantidadeBombas = 15;
+    int qtdCasasAbertas = 0;
     boolean jogoEncerrado = false;
     /**
      * Creates new form Jogo
@@ -39,6 +44,9 @@ public final class Jogo extends javax.swing.JFrame {
     // CONSTRUTOR DA CLASSE/TELA - SEM ELE A TELA NÃO FUNCIONA
     public Jogo() {
         initComponents();
+        //definir um tamanho para o meu painel
+        painelCampo.setPreferredSize(new Dimension(900,700));
+        
         CriarTabuleiro();
     }
     
@@ -51,13 +59,19 @@ public final class Jogo extends javax.swing.JFrame {
                 // váriavel botão para guardar os dados provisorios
                 JButton botao = new JButton();
                 botao.setFont(new Font("Arial",Font.BOLD,16)); // FONTE
-                botao.setBackground(new Color(255,192,230)); //COR DE FUNDO
+                botao.setBackground(new Color(97,30,30)); //COR DE FUNDO
                 botao.setForeground(Color.WHITE); //COR DE TEXTO
                 
                 //remover marcas do botão que vem por padrão
                 botao.setFocusPainted(false);
-                botao.setEnabled(false);
+                botao.setEnabled(false); // desabilita o botão do campo minado
                 
+                final int linhaSelecionada = linha;
+                final int colunaSelecionada = coluna;
+                
+                //adicionar o evento de clique para abrir as casas
+                botao.addActionListener((ActionEvent Evento)->{abrirBotao(linhaSelecionada,colunaSelecionada);
+                });
                 //adicionar o botao dentro da matriz
                 btnCampos[linha][coluna]=botao;
                 
@@ -68,7 +82,75 @@ public final class Jogo extends javax.swing.JFrame {
             
         } //fim do 1º for
     } //fim do método CriarTabuleiro
-
+    
+    public void AdicionarBombas(){
+        // Criar uma variavel Random para gerar valores aleatorios
+        Random sorteador = new Random();
+        int bombasAdicionadas = 0;
+        
+        while( bombasAdicionadas < quantidadeBombas){
+            // sortear o nº da linha e coluna que vai ficar a bomba
+            int linha = sorteador.nextInt(10);
+            int coluna = sorteador.nextInt(10);
+            // verifica se não existe bomba adicionada no local
+            if(!bombas[linha][coluna]){
+                // adicionar a bomba na matriz
+                bombas[linha][coluna] = true;
+                bombasAdicionadas++;
+            }
+        }
+        
+    } // fim do AdicionarBombas
+    
+    public void IniciarJogo(){
+        // Chamar o metodo adicionarBombas
+        AdicionarBombas();
+        
+        //depois precisamos iniciar os botoes do jogo
+        for(int coluna = 0; coluna <= 0; coluna++){
+            for (int linha=0;linha <=9; linha++){
+                JButton botao = btnCampos[linha][coluna];
+                //deixar os botoes visiveis e clicaveis
+                botao.setEnabled(true);
+            } // fim do 2º for
+        } // fim do 1º for
+        btnIniciar.setText("REINICIAR");
+    } // fim do IniciarJogo
+    
+    public void abrirBotao(int linha, int coluna){
+        // verificar se o jogo foi finalizado
+        if(jogoEncerrado) return; // return é a função abrir botão vai dar ao usuário
+        /*if(jogoEncerrado){
+            return; 
+        }*/
+        
+        // verificar se o botao ja foi aberto
+        if(abertos[linha][coluna]){
+            return;
+        }
+        /* Se o jogo ainda estiver rodando e o botão ainda não tiver
+        sido aberto - então vamos abrir o botão*/
+        abertos[linha][coluna] = true;
+        qtdCasasAbertas++;
+        
+        // acessar o que tem dentro do botão
+        JButton botao = btnCampos [linha][coluna];
+        // se o botão tiver uma bomba, então vamos mostrar a bomba a ele
+        if(bombas[linha][coluna]){
+            //variavel que recebe nossa imagem
+            ImageIcon imgBomba = new ImageIcon(getClass().getResource("/Interface/bomb.png"));
+        
+            // colocar a imagem botao
+            botao.setIcon(imgBomba);
+            return;
+        }else{
+            ImageIcon imgBandeira = new ImageIcon(getClass().getResource("/Interface/flag.png"));
+            botao.setIcon(imgBandeira);
+            return;
+        }
+        
+    } // fim do metodo abrirBotao
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -130,6 +212,7 @@ public final class Jogo extends javax.swing.JFrame {
         btnIniciar.setFont(new java.awt.Font("Franklin Gothic Heavy", 0, 14)); // NOI18N
         btnIniciar.setForeground(new java.awt.Color(255, 255, 255));
         btnIniciar.setText("INICIAR");
+        btnIniciar.addActionListener(this::btnIniciarActionPerformed);
 
         tfTempo.setEditable(false);
         tfTempo.setBackground(new java.awt.Color(204, 204, 0));
@@ -190,6 +273,11 @@ public final class Jogo extends javax.swing.JFrame {
     private void tfTempoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfTempoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_tfTempoActionPerformed
+
+    private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarActionPerformed
+        // TODO add your handling code here:
+        IniciarJogo();
+    }//GEN-LAST:event_btnIniciarActionPerformed
 
     /**
      * @param args the command line arguments

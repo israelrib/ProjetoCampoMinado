@@ -10,8 +10,10 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.Random;
+import javax.swing.Timer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -36,7 +38,11 @@ public final class Jogo extends javax.swing.JFrame {
     
     int quantidadeBombas = 15;
     int qtdCasasAbertas = 0;
+    
     boolean jogoEncerrado = false;
+    
+    int segundosPassados = 0;
+    Timer cronometro;
     /**
      * Creates new form Jogo
      */
@@ -103,11 +109,14 @@ public final class Jogo extends javax.swing.JFrame {
     } // fim do AdicionarBombas
     
     public void IniciarJogo(){
+        LimparJogo();
+        
         // Chamar o metodo adicionarBombas
         AdicionarBombas();
-        
+        IniciarCronometro();
+                
         //depois precisamos iniciar os botoes do jogo
-        for(int coluna = 0; coluna <= 0; coluna++){
+        for(int coluna = 0; coluna <= 9; coluna++){
             for (int linha=0;linha <=9; linha++){
                 JButton botao = btnCampos[linha][coluna];
                 //deixar os botoes visiveis e clicaveis
@@ -138,19 +147,107 @@ public final class Jogo extends javax.swing.JFrame {
         // se o botão tiver uma bomba, então vamos mostrar a bomba a ele
         if(bombas[linha][coluna]){
             //variavel que recebe nossa imagem
-            ImageIcon imgBomba = new ImageIcon(getClass().getResource("/Interface/bomb.png"));
+            ImageIcon imgBomba = new ImageIcon(getClass().getResource("/assets/bomb.png"));
         
             // colocar a imagem botao
             botao.setIcon(imgBomba);
+            FinalizarJogo(false); // chamando o método FinalizarJogo
             return;
         }else{
-            ImageIcon imgBandeira = new ImageIcon(getClass().getResource("/Interface/flag.png"));
+            ImageIcon imgBandeira = new ImageIcon(getClass().getResource("/assets/flag.png"));
             botao.setIcon(imgBandeira);
             return;
         }
         
     } // fim do metodo abrirBotao
     
+    // este metodo informa quando a pessoa perder ou ganhar o jogo
+    public void FinalizarJogo(boolean venceu){
+        MostrarBombas();
+        // vamos informar que o jogo acabou
+        jogoEncerrado = true;
+        cronometro.stop();
+        // verificar se a oessia venceu ou nao
+        if(venceu){
+            JOptionPane.showMessageDialog(this,"Parabéns, voce venceu!");
+            LimparJogo();
+        }else{
+            JOptionPane.showMessageDialog(this, "Ops, voce perdeu o jogo!");
+            LimparJogo();
+        }
+        
+    }// fim do FinalizarJogo
+    public void VerificarVitoria(){
+        // armazenar a quantidade de casas com bandeiras
+        int casasSemBomba = 100 - quantidadeBombas;
+        /* se a pessoa abriu todas as bandeiras e não abriu nenhuma bomba
+        então ela venceu o jogo, e o método FinalizarJogo imprime a mensagem */
+        if(qtdCasasAbertas == casasSemBomba){
+            FinalizarJogo(true);
+        }
+    }
+    public void IniciarCronometro(){
+        // zerar o cronometro caso tenha tido um jogo anterior
+        if(cronometro != null){
+            cronometro.stop();
+        }
+        // reseta o cronometro
+        segundosPassados = 0;
+        tfTempo.setText("00:00");
+        
+        // converter o tempo em minutos e segundos
+        cronometro = new Timer(1000, Evento->{
+            segundosPassados++;
+            int minutos = segundosPassados/60;
+            int horas = minutos/60;
+            int segundo = segundosPassados%60;
+            // mostrar o tempo dentro da variável
+            tfTempo.setText(
+            String.format("%02d:%02d",minutos,segundo)
+            );
+        });
+        cronometro.start();
+    }
+    public void LimparJogo(){
+        qtdCasasAbertas=0;
+        jogoEncerrado = false;
+        
+        
+        
+        
+        for(int coluna=0;coluna<=9;coluna++){
+            for(int linha=0;linha<=9;linha++){
+                bombas[linha][coluna]=false;
+                abertos[linha][coluna]=false;
+                               
+                // limpeza dos botões
+                JButton botao = btnCampos[linha][coluna];
+                botao.setIcon(null);
+                
+                
+                
+            }// fim do 2º for
+        } // fim do 1º for
+        AdicionarBombas();
+        IniciarCronometro();
+        
+    } // fim do LimparJogo
+    public void MostrarBombas(){
+        for(int coluna=0;coluna<=9;coluna++){
+            for(int linha=0;linha<=9;linha++){
+                JButton botao = btnCampos [linha][coluna];
+                // se o botão tiver uma bomba, então vamos mostrar a bomba a ele
+                if(bombas[linha][coluna]){
+                    //variavel que recebe nossa imagem
+                    ImageIcon imgBomba = new ImageIcon(getClass().getResource("/assets/bomb.png"));
+                    // colocar a imagem botao
+                    botao.setIcon(imgBomba);
+                    
+                } // fim do if
+            } // fim do 2º for
+        } // fim do 1º for
+        
+    } // fim do método MostrarBombas
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
